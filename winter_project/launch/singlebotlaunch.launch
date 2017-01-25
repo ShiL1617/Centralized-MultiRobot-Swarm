@@ -1,8 +1,25 @@
 <launch>
-  <param name="robot_description" textfile="$(find my_robot)/my_robot.urdf" />
 
-  <node pkg="rviz" type="rviz" name="rviz" output="screen"/>
-
+  <param name="robot_description" command="cat $(find winter_project)/urdf/diffbot.urdf"/>
+  <param name="use_gui" value="True"/>
   <!--
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" /> -->
+  <arg name="rviz_config" default="$(find winter_project)/config/single_diff_bot.rviz"/>
+    -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"> <param name="publish_frequency" value="50"/> </node>
+  <node pkg="rviz" type="rviz" name="rviz" output="screen"/>
+  <!--
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" required="true" />
+    -->
+    <!--
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+    -->
+
+  <node pkg="winter_project" type="diffbot_pose.py" name="diffbot_pose"/>
+
+  <!-- args="-d $(find winter_project)/src/diffbot_pose.py" -->
+
+  <node pkg="winter_project" type="diffbot_control.py" name="diffbot_control" />
+
+  <node pkg="winter_project" type="camera_sim.py" name="camera_sim" />
+
 </launch>

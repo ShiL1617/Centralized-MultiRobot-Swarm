@@ -2,8 +2,8 @@
 import rospy
 import numpy as np
 from std_msgs.msg import String
-from sensor_msgs.msg import Pose2D
-from geometry_msgs.msg import Twist, Vector3
+from sensor_msgs.msg import JointState
+from geometry_msgs.msg import Twist, Vector3, Pose2D
 from math import pi, atan, sin, cos
 
 def camera_noise(Pose2D):
@@ -36,8 +36,8 @@ def camera_noise(Pose2D):
 if __name__=='__main__':
 
     rospy.init_node('camera_sim')
-    pub = rospy.Publisher('pose_update', Pose2D, queue_size=10)
-    rospy.Subscriber('vel_update', Pose2D, camera_noise)
+    pub = rospy.Publisher('/vel_update', Pose2D, queue_size=10)
+    rospy.Subscriber('/camera_pose', Pose2D, camera_noise)
     try:
         rospy.spin()
     except KeyboardInterrupt:

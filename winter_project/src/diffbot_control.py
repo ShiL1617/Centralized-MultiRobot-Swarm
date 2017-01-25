@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String
-from sensor_msgs.msg import Pose2D
-from geometry_msgs.msg import Twist, Vector3
+from sensor_msgs.msg import JointState
+from geometry_msgs.msg import Twist, Vector3, Pose2D
 from math import pi, atan, sin, cos
 
 def coord2vel(Pose2D):
@@ -43,8 +43,8 @@ def coord2vel(Pose2D):
 if __name__=='__main__':
 
     rospy.init_node('diffbot_control')
-    pub = rospy.Publisher('pose_update', Twist, queue_size=10)
-    rospy.Subscriber('vel_update', Pose2D, coord2vel)
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    rospy.Subscriber('/vel_update', Pose2D, coord2vel)
     try:
         rospy.spin()
     except KeyboardInterrupt:
