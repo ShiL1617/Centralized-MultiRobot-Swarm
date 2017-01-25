@@ -11,10 +11,15 @@ def coord2vel(Pose2D):
     K1 = 20
     K2 = 20
 
+    #goal position
+    x_final = 10
+    y_final = 15
+    theta_final = pi/4
+
     vel = Twist()
 
-    linear_error = ((Pose2D.x-pose_x)**2+(Pose2D.y-pose_y)**2)**(0.5)
-    angular_error = abs(theta_goal-Pose2D.theta)
+    linear_error = ((x_final-Pose2D.x)**2+(y_final-Pose2D.y)**2)**(0.5)
+    angular_error = abs(theta_final-Pose2D.theta)
 
     vel.linear.x = (K1*linear_error*cos(angular_error))*cos(Pose2D.theta)
     vel.linear.y = (K1*linear_error*cos(angular_error))*sin(Pose2D.theta)
@@ -27,9 +32,11 @@ def coord2vel(Pose2D):
     pub.publish(vel)
 
     #updating/storing for next iteration
+    """
     pose_x = Pose2D.x
     pose_y = Pose2D.y
     pose_theta = Pose2D.theta
+    """
 
     return
 
