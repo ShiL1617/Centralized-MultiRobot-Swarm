@@ -65,17 +65,17 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        fwheel_attach:
+        chassis_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lwheel_base_connection:
+        lwheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        rwheel_base_connection:
+        rwheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -93,11 +93,13 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: false
-        fwheel_attach:
+        chassis_link:
           Value: false
-        lwheel_base_connection:
+        lwheel:
           Value: false
-        rwheel_base_connection:
+        odom:
+          Value: true
+        rwheel:
           Value: false
       Marker Scale: 1
       Name: TF
@@ -105,19 +107,19 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        base_link:
-          fwheel_attach:
-            {}
-          lwheel_base_connection:
-            {}
-          rwheel_base_connection:
-            {}
+        odom:
+          base_link:
+            chassis_link:
+              lwheel:
+                {}
+              rwheel:
+                {}
       Update Interval: 0
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: base_link
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
@@ -138,7 +140,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.64603
+      Distance: 8.39619
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -150,10 +152,10 @@ Visualization Manager:
         Z: 0
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.205398
+      Pitch: 0.659796
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.4304
+      Yaw: 6.00358
     Saved: ~
 Window Geometry:
   Displays:
