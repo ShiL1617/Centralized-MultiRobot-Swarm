@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import rospy
-import numpy as np
-from std_msgs.msg import String
-from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist, Vector3, Pose2D
+from math import pi, atan, sin, cos, atan2
+
+import numpy as np
 from math import pi, atan, sin, cos
 
 def camera_noise(pose2D):
@@ -18,25 +18,22 @@ def camera_noise(pose2D):
     y = pose2D.y
     theta = pose2D.theta
 
-    x_noise = np.random.normal(x,0.001,1)
-    y_noise = np.random.normal(y,0.001,1)
-    theta_noise = np.random.normal(y,0.001,1)
+    x_noise = np.random.normal(x,0.000001,1)
+    y_noise = np.random.normal(y,0.000001,1)
+    theta_noise = np.random.normal(y,0.000001,1)
 
     cf_pose = Pose2D()
-    cf_pose.x = x + x_noise
-    cf_pose.y = y + y_noise
-    cf_pose.theta = theta + theta_noise
+    cf_pose.x = x
+    cf_pose.y = y
+    cf_pose.theta = theta
     pub.publish(cf_pose)
 
     return
 
 if __name__=='__main__':
 
-    rospy.init_node('camera_sim')
+    rospy.init_node('diff_drive_camera_sim')
     pub = rospy.Publisher('vel_update', Pose2D, queue_size=10)
-    rospy.Subscriber('camera_pose', Pose2D, camera_noise)
+    rate = rospy.Rate(250)
+    rospy.Subscriber('pose_est', Pose2D, camera_noise)
     rospy.spin()
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down")

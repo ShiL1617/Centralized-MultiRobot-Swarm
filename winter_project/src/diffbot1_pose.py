@@ -20,15 +20,15 @@ pose_y = 0
 pose_theta = 0
 
 #goal
-x_final = 1
-y_final = 0
-theta_final = pi/2
+x_final = 0
+y_final = 2
+theta_final = 0
 
 #velocity control law and gains
 
 #gains K1, K2
-K1 = 20
-K2 = 15
+K1 = 0.1
+K2 = 0.1
 
 #control law
 vel = Twist()
@@ -36,9 +36,11 @@ vel = Twist()
 #start loop
 
 while not rospy.is_shutdown():
-
+    #make sure this error term is correct?
     linear_error = ((x_final-pose_x)**2+(y_final-pose_y)**2)**(0.5)
-    angular_error = abs(theta_final-pose_theta)
+
+    #need to add in angle wrapping correction
+    angular_error = abs(theta_final-(pi/2-(pose_theta%(2*pi))))
 
     vel.linear.x = (K1*linear_error*cos(angular_error))*cos(pose_theta)
     vel.linear.y = (K1*linear_error*cos(angular_error))*sin(pose_theta)
@@ -48,12 +50,10 @@ while not rospy.is_shutdown():
     vel.angular.y = 0
     vel.angular.z = K1*sin(angular_error)*cos(angular_error) + K2*angular_error
 
-    #Euler integration- find integrated position and orientation
-    x_velocity = (((vel.linear.x)**2+(vel.linear.y)**2)**(0.5)*cos(vel.angular.z))
+    #Euler integration- find integrated position and orientation, make sure in right coordinate system (v,omega) with respect to how robot actually moves
+    v = ((vel.linear.x)**2+(vel.linear.y)**2)**(0.5)
 
-    y_velocity = (((vel.linear.x)**2+(vel.linear.y)**2)**(0.5)*sin(vel.angular.z))
-
-    theta_velocity = vel.angular.z
+    w = vel.angular.z
 
     current_time = rospy.Time.now()
     last_time = rospy.Time.now()
@@ -61,9 +61,9 @@ while not rospy.is_shutdown():
 
     #insert integration noise here later (no encoders)
 
-    pose_x = pose_x + x_velocity*dt
-    pose_y = pose_y + y_velocity*dt
-    pose_theta = pose_theta + theta_velocity*dt
+    pose_x = pose_x + v*cos(pose_theta)*(1/float(100))
+    pose_y = pose_y + v*sin(pose_theta)*(1/float(100))
+    pose_theta = pose_theta + w*(1/float(100))
 
     #camera noise here later, pose estimate from here is input to velocity control, then loop starts over
 
@@ -84,7 +84,7 @@ while not rospy.is_shutdown():
         (pose_updated.x, pose_updated.y, 0.),
         odom_quat,
         current_time,
-        "robot1/base_link",
+        "base_link",
         "odom"
     )
 

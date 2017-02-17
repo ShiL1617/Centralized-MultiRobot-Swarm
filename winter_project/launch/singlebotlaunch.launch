@@ -1,23 +1,29 @@
 <launch>
-
+  <!--
   <param name="robot_description" command="cat $(find winter_project)/urdf/diffbot.urdf"/>
+  -->
   <!--<param name="use_gui" value="True"/>-->
 
   <arg name="rviz_config" default="$(find winter_project)/config/single_diff_bot.rviz"/>
 
+  <!--
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"> </node>
+  -->
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" required="true" />
 
   <!--<node pkg="winter_project" type="Nbots_params.py" name="diffbot_coords"/>-->
-
+  <!--
   <node pkg="winter_project" type="diffbot1_pose.py" name="vel_pose_est1"/>
+  -->
 
-  <node pkg="winter_project" type="diffbot2_pose.py" name="vel_pose_est2"/>
+  <group ns="robot_1" >
+  <node name="diff_drive_integrator" type="diffbot_pose.py" pkg="winter_project" >
+    <param name="child" value="robot_1" />
+  </node>
+  <node pkg="winter_project" type="diffbot_control.py" name="diffbot_velocity_controller"/>
+  </group>
 
-  <node pkg="winter_project" type="diffbot3_pose.py" name="vel_pose_est3"/>
-
-  <node pkg="winter_project" type="diffbot4_pose.py" name="vel_pose_est4"/>
   <!--
   <node pkg="winter_project" type="control_integration.py" name="diffbot_pose"/>
   -->

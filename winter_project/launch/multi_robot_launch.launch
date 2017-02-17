@@ -1,0 +1,73 @@
+<launch>
+  <arg name="vis" default="true" /> <!-- run rviz? -->
+
+  <!--
+  <param name="robot_description" command="cat $(find winter_project)/urdf/diffbot.urdf"/>
+  -->
+
+  <arg name="rviz_config" default="$(find winter_project)/config/multibot_config.rviz"/>
+
+  <!-- start robot 1 -->
+  <group ns="robot_1" >
+    <node name="diff_drive_integrator" type="diff_drive_integrator.py" pkg="winter_project"  output="screen">
+      <param name="child" value="robot_1" />
+      <param name="integrator_num" type="int" value="0" />
+      <param name="controller_num" type="int" value="0" />
+    </node>
+    <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
+      <param name="controller_num" type="int" value="0" />
+    </node>
+
+  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
+
+  </group>
+
+  <!-- start robot 2 -->
+
+  <group ns="robot_2" >
+    <node name="diff_drive_integrator" type="diff_drive_integrator.py" pkg="winter_project"  output="screen">
+      <param name="child" value="robot_2" />
+      <param name="integrator_num" type="int" value="1" />
+    </node>
+    <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
+      <param name="controller_num" type="int" value="1" />
+    </node>
+
+  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
+
+  </group>
+
+  <!-- start robot 3 -->
+
+  <group ns="robot_3" >
+    <node name="diff_drive_integrator" type="diff_drive_integrator.py" pkg="winter_project"  output="screen">
+      <param name="child" value="robot_3" />
+      <param name="integrator_num" type="int" value="2" />
+    </node>
+    <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
+      <param name="controller_num" type="int" value="2" />
+    </node>
+
+  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
+
+  </group>
+
+  <!--
+  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
+  -->
+
+
+
+  <!-- start joystick -->
+  <!--
+  <include file="$(find luke_test_package)/joy_launch.launch" >
+    <arg name="topic" value="robot_2/cmd_vel" />
+  </include>
+  -->
+
+  <!-- start up rviz unless visualization is set to false -->
+  <group if="$(arg vis)">
+    <node pkg="rviz" type="rviz" respawn="false" name="rviz" args="-d $(arg rviz_config)"/>
+  </group>
+
+</launch>
