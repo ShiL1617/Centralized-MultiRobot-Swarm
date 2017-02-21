@@ -39,7 +39,7 @@ class DiffDriveVelocityController( object ):
         #initialize publishers and subscribers
         self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
         self.rate = rospy.Rate(250)
-        self.sub = rospy.Subscriber('vel_update', Pose2D, self.pose_callback)
+        self.sub = rospy.Subscriber('pose_est', Pose2D, self.pose_callback)
 
 
         return
@@ -61,8 +61,8 @@ class DiffDriveVelocityController( object ):
         global_init_theta = ((pose2D.theta))%(2.*pi)
         global_goal_theta = atan2(self.goal_pose[1]-pose2D.y,self.goal_pose[0]-pose2D.x)%(2.*pi)
 
-        dy = abs(pose2D.y - self.goal_pose[1])
-
+        #dy = abs(pose2D.y - self.goal_pose[1])
+        dy = abs(self.y_init - self.goal_pose[1])
         #if x coordinate of goal pose is larger than initial x coordinate
         if self.x_init < self.goal_pose[0]:
             a_cornercase, r_cornercase = self.turn(global_init_theta, 2.*pi)

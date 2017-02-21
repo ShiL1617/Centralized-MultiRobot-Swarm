@@ -1,0 +1,26 @@
+multi_poses()
+
+string robot_name
+geometry_msgs/Pose2D[] pose_ests
+
+P = multiposes()
+
+P.robot_name = "robot_i"
+P.pose_ests[i].x
+P.pose_ests[i].y
+P.pose_ests[i].theta
+
+where i refers to robot number
+
+multi_vels()
+
+string robot_name
+geometry_msgs/Twist[] twists
+
+V = multi_vels()
+
+V.robot_name = "robot_i"
+V.twists[i].linear.x
+V.twists[i].angular.z
+
+where i refers to robot number

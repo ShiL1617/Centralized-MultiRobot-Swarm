@@ -54,6 +54,10 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    coords_msgs.msg
+   all_pose_est.msg
+   all_robot_vel.msg
+   multi_poses.msg
+   multi_vels.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -108,7 +112,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES winter_project
-#  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation message_runtime nav_msgs roscpp rospy sensor_msgs std_msgs
+  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_generation message_runtime nav_msgs roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 

@@ -17,9 +17,9 @@
     <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
       <param name="controller_num" type="int" value="0" />
     </node>
-
+  <!--
   <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
-
+  -->
   </group>
 
   <!-- start robot 2 -->
@@ -32,9 +32,9 @@
     <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
       <param name="controller_num" type="int" value="1" />
     </node>
-
+  <!--
   <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
-
+  -->
   </group>
 
   <!-- start robot 3 -->
@@ -47,9 +47,9 @@
     <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
       <param name="controller_num" type="int" value="2" />
     </node>
-
+  <!--
   <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
-
+  -->
   </group>
 
   <!--
