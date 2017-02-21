@@ -57,11 +57,14 @@ class DiffDriveIntegrator( object ):
         self.br = tf.TransformBroadcaster()
         self.pos_pub = rospy.Publisher("pose_est", multi_poses, queue_size=10)
         self.rate = rospy.Rate(50)
-        self.cmd_sub = rospy.Subscriber("cmd_vel", multi_vels, self.integrate_callback)
-        # self.int_timer = rospy.Timer(rospy.Duration(1/float(self.freq)), self.integrate_callback)
+        self.cmd_sub = rospy.Subscriber("cmd_vel", multi_vels, self.twist_callback)
+        self.int_timer = rospy.Timer(rospy.Duration(1/float(self.freq)), self.integrate_callback)
         return
 
     def integrate_callback(self, tdat):
+
+        #function
+
         v = self.current_vel[0]
         w = self.current_vel[1]
 
@@ -74,8 +77,6 @@ class DiffDriveIntegrator( object ):
         p_est = self.p_est
         p_est.robot_name = self.robot_name
         robot_number = int(p_est.robot_name[6])
-
-        rospy.sleep(1)
 
         print "robot_number", robot_number
         print "p_est.pose_ests[robot_number].x", p_est.pose_ests[robot_number].x

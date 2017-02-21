@@ -53,9 +53,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   coords_msgs.msg
-   all_pose_est.msg
-   all_robot_vel.msg
    multi_poses.msg
    multi_vels.msg
  )
