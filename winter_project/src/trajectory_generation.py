@@ -5,13 +5,15 @@
 ###############
 import rospy
 from geometry_msgs.msg import Twist, Pose2D
+from winter_project.msg import multi_poses, multi_vels
 
 ###################
 # NON ROS IMPORTS #
 ###################
 import numpy as np
-from math import pi, atan, sin, cos
+from math import pi, atan2, sin, cos
 
+N = 10
 
 class TrajectoryGeneration():
     def __init__(self):
@@ -19,27 +21,35 @@ class TrajectoryGeneration():
         #initialize timer
         self.t0 = rospy.get_time()
 
+        #initialize multi_poses message to be published
+        self.traj = multi_poses()
+
         #initialize publisher
-        self.pub = rospy.Publisher('pose_est', Pose2D, queue_size=10)
-        self.rate = rospy.Rate(250)
+        self.pub = rospy.Publisher('pose_des', multi_poses, queue_size=10)
+        self.rate = rospy.Rate(50)
+
         return
 
     def parametric(self):
+        self.traj = multi_poses()
 
         t = rospy.get_time() - self.t0
 
-        x_t = 4.*cos(t)
-        y_t = 4.*sin(t)
+        for i in range(N):
 
-        #how to estimate local heading of each robot on trajectory?
+            phase_var = i*0.1
 
-        #instance of Pose2D, which will be published to pose_est topic that velocity controller subscribes to
-        trajectory_coordinates = Pose2D()
+            x_t = 4.*cos(t-i)
+            y_t = 4.*sin(t-i)
 
-        trajectory_coordinates.x = x_t
-        trajectory_coordinates.y = y_t
+            dx_dt = -4*sin(t)
+            dy_dt = 4*cos(t)
 
-        pub.publish(trajectory_coordinates)
+            theta_t = atan2(dy_dt,dx_dt)
+
+            self.traj.poses.append(Pose2D(x_t, y_t, theta_t))
+
+        pub.publish(self.traj)
         return
 
 def main():

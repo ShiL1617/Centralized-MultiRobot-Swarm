@@ -1,3 +1,2 @@
-string robot_name
-geometry_msgs/Pose2D[] pose_ests
+geometry_msgs/Pose2D[] poses
 

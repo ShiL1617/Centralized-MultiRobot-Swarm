@@ -22,41 +22,6 @@
   -->
   </group>
 
-  <!-- start robot 2 -->
-
-  <group ns="robot_2" >
-    <node name="diff_drive_integrator" type="diff_drive_integrator.py" pkg="winter_project"  output="screen">
-      <param name="child" value="robot_2" />
-      <param name="integrator_num" type="int" value="1" />
-    </node>
-    <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
-      <param name="controller_num" type="int" value="1" />
-    </node>
-  <!--
-  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
-  -->
-  </group>
-
-  <!-- start robot 3 -->
-
-  <group ns="robot_3" >
-    <node name="diff_drive_integrator" type="diff_drive_integrator.py" pkg="winter_project"  output="screen">
-      <param name="child" value="robot_3" />
-      <param name="integrator_num" type="int" value="2" />
-    </node>
-    <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
-      <param name="controller_num" type="int" value="2" />
-    </node>
-  <!--
-  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
-  -->
-  </group>
-
-  <!--
-  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
-  -->
-
-
 
   <!-- start joystick -->
   <!--

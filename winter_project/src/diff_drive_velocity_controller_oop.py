@@ -21,7 +21,9 @@ class DiffDriveVelocityController( object ):
         #self.goal_pose = rospy.get_param("~goalpose",GOAL_POSE)
         self.controller_num = rospy.get_param("~controller_num", CONTROLLER_NUM)
         #needed random variables
-        self.goal_pose = GOAL_POSE[self.controller_num]
+        self.goal_pose_list = GOAL_POSE
+        self.goal_pose = None
+        # self.goal_pose = GOAL_POSE[self.controller_num]
         self.val = False
         self.temp = 0
         self.x_init = 0
@@ -131,7 +133,6 @@ class DiffDriveVelocityController( object ):
             vel.angular.z = 1.
         """
         self.pub.publish(vel)
-        self.rate.sleep()
         return
 
     def turn(self, theta1, theta2):
