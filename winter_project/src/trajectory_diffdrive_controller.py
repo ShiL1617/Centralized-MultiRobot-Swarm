@@ -57,7 +57,7 @@ class DiffDriveVelocityController( object ):
         self.bot_radius = 0.075
         self.angularv_shift = 1
         self.freq = rospy.get_param("~freq", VELOCITY_TRANSMISSION_FREQ)
-        self.traj_freq = rospy.get_param("~freq", TRAJECTORY_FREQ)
+        self.traj_freq = rospy.get_param("~traj_freq", TRAJECTORY_FREQ)
         # self.gamma = 0.001
         # self.b = 0.001
 
