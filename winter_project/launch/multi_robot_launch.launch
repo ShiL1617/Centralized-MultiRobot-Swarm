@@ -14,7 +14,7 @@
       <param name="integrator_num" type="int" value="0" />
       <param name="controller_num" type="int" value="0" />
     </node>
-    <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="diff_drive_velocity_controller" output="screen">
+    <node pkg="winter_project" type="diff_drive_velocity_controller_oop.py" name="test_diff_drive_velocity_controller" output="screen">
       <param name="controller_num" type="int" value="0" />
     </node>
   <!--
