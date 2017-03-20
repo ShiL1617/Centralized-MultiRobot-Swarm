@@ -1,0 +1,44 @@
+<launch>
+  <arg name="vis" default="true" /> <!-- run rviz? -->
+
+  <!--
+  <param name="robot_description" command="cat $(find winter_project)/urdf/diffbot.urdf"/>
+  -->
+
+  <arg name="rviz_config" default="$(find winter_project)/config/multibot_config.rviz"/>
+
+  <!-- start robots -->
+
+  <node name="test_diff_drive_integrator" type="test_diff_integrator.py" pkg="winter_project"  output="screen">
+  </node>
+
+  <node pkg="winter_project" type="test_diff_controller.py" name="test_diff_drive_velocity_controller" output="screen">
+  </node>
+
+<!--   <node pkg="winter_project" type="trajectory_generation.py" name="diff_drive_trajectory_generation" output="screen">
+  </node> -->
+
+  <!--
+  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
+  -->
+
+
+  <!--
+  <node pkg="winter_project" type="diff_drive_camera_sim.py" name="diff_drive_camera_sim" output="screen"/>
+  -->
+
+
+
+  <!-- start joystick -->
+  <!--
+  <include file="$(find luke_test_package)/joy_launch.launch" >
+    <arg name="topic" value="robot_2/cmd_vel" />
+  </include>
+  -->
+
+  <!-- start up rviz unless visualization is set to false -->
+  <group if="$(arg vis)">
+    <node pkg="rviz" type="rviz" respawn="false" name="rviz" args="-d $(arg rviz_config)"/>
+  </group>
+
+</launch>
