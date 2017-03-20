@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 # N = len(GOAL_POSES) # number of robots
 N = 3
 BASE_NAME = "reference_"
-VELOCITY_TRANSMISSION_FREQ = 100 # Hz
-TRAJECTORY_FREQ = 5 # Hz
+VELOCITY_TRANSMISSION_FREQ = 250 # Hz
+TRAJECTORY_FREQ = 250 # Hz
 # GOAL_POSES = np.array([[1.,0.,0.]])
 
 # GOAL_POSES = np.zeros((N,3))
@@ -51,10 +51,10 @@ class DiffDriveVelocityController( object ):
         # miscalleneous class variables/constants
         self.gamma = 0.9
         self.b = 4.0
-        self.phase_multiplier = 0.
+        self.phase_multiplier = 1.
         self.linear_velocity_multiplier = 1.
         self.angular_velocity_multiplier = 1.
-        self.bot_radius = 1.1
+        self.bot_radius = 0.075
         self.angularv_shift = 1
         self.freq = rospy.get_param("~freq", VELOCITY_TRANSMISSION_FREQ)
         self.traj_freq = rospy.get_param("~freq", TRAJECTORY_FREQ)
@@ -124,8 +124,8 @@ class DiffDriveVelocityController( object ):
             vmax = 4.
             wmax = 4.
 
-            # v_control = 0.5
-            # w_control = 0.5
+            # v_control = 0.75
+            # w_control = 0.75
 
             pose_predict = np.array([x + vmax*(1/250),y + vmax*(1/250),theta + wmax*(1/250)])
 
@@ -136,15 +136,15 @@ class DiffDriveVelocityController( object ):
             current_y_min = pose_predict[1] - self.bot_radius
 
             if any(x >= current_x_min and x <= current_x_max  for x in otherbots[:,0]) and any(y >= current_y_min and y <= current_y_max for y in otherbots[:,1]):
-                self.angular_velocity_multiplier = 5.
-                self.linear_velocity_multiplier = 1./(self.angular_velocity_multiplier)
-                self.phase_multiplier = 10.
+                self.angular_velocity_multiplier = 2.
+                self.linear_velocity_multiplier = 0.1
+                # self.phase_multiplier = 10.
                 self.orient_offset = -pi/3.
                 self.angularv_shift = -1
             else:
                 self.angular_velocity_multiplier = 1.
                 self.linear_velocity_multiplier = 1.
-                self.phase_multiplier = 1.
+                # self.phase_multiplier = 1.
                 self.orient_offset = 0.
                 self.angularv_shift = 1
 
@@ -183,8 +183,9 @@ class DiffDriveVelocityController( object ):
             # vel_adjust = i/1.1
 
             # set radii of each robot's circular trajectory- hardcoded for now
-            A = 2.
+            A = 1.
 
+            # t = 0.1*t
             x_t = A*cos(t+phase_var)
             y_t = A*sin(t+phase_var)
 
