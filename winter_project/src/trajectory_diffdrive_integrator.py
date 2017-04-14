@@ -8,6 +8,8 @@ import tf
 import tf.transformations as tr
 from geometry_msgs.msg import Twist, Pose2D
 from winter_project.msg import multi_poses, multi_vels
+import tf2_ros
+from visualization_msgs.msg import Marker
 
 ###################
 # NON ROS IMPORTS #
@@ -24,24 +26,11 @@ INTEGRATION_FREQ = 250 # Hz
 # INITIAL_POSES = np.array([[1.,0.,0.]])
 N = 3
 
+INITIAL_POSES = np.zeros((N,3))
+INITIAL_POSES[:,0] = 1.5
+
 #for circular trajectory following
 # INITIAL_POSES = 1.*np.array([[1.01, 0.002, 0.],[1.01, 0.001, 0.],[1.01, 0., 0.],[1.01, -0.001, 0.],[1.01, -0.002, 0.]])
-INITIAL_POSES = np.zeros((N,3))
-
-INITIAL_POSES[0,0] = 0.
-INITIAL_POSES[1,0] = -0.2
-INITIAL_POSES[2,0] = 0.2
-
-
-INITIAL_POSES[0,1] = 0.
-INITIAL_POSES[1,1] = 0.
-INITIAL_POSES[2,1] = 0.
-INITIAL_POSES[:,2] = -pi/4.
-INITIAL_POSES[1,2] = pi/4.
-INITIAL_POSES[2,2] = pi/2.
-
-
-
 
 #for sinusoidal trajectory following
 # INITIAL_POSES = np.array([[0., 0.2, 0.],[0., 0.15, 0.],[0., 0.1, 0.],[0., 0.05, 0.],[0., 0., 0.]])
@@ -85,13 +74,14 @@ class DiffDriveIntegrator( object ):
 
         self.init_flag = False
 
-        # self.size_flag = True
-        # create all subscribers, timers, publishers, listeners, broadcasters,
-        # etc.
+
         self.br = tf.TransformBroadcaster()
         self.pos_pub = rospy.Publisher("pose_est", multi_poses, queue_size=10)
         self.cmd_sub = rospy.Subscriber("cmd_vel", multi_vels, self.twist_callback)
         self.int_timer = rospy.Timer(rospy.Duration(1/float(self.freq)), self.integrate_callback)
+
+        self.marker_pub = rospy.Publisher('/visualization_marker', Marker, queue_size=10)
+
         return
 
     def integrate_callback(self, tdata):
@@ -124,7 +114,8 @@ class DiffDriveIntegrator( object ):
             self.child = "robot"+"_"+str(i)
             self.br.sendTransform(pos, quat, rospy.Time.now(), self.child, self.parent)
 
-            #publish estimated pose to diffdrive_velocity controller via pose_est topic
+            # define markers for each robot trajectory
+
 
             self.n_poses.poses.append(Pose2D(self.current_pose[i][0],self.current_pose[i][1],self.current_pose[i][2]))
             # self.init_flag = False

@@ -5,6 +5,8 @@ import rospy
 from geometry_msgs.msg import Twist, Vector3, Pose2D
 from winter_project.msg import multi_poses, multi_vels
 import tf
+import tf2_ros
+from visualization_msgs.msg import Marker
 
 #NON ROS IMPORTS
 from math import pi, atan, sin, cos, tan, atan2, floor, ceil, sqrt, exp, fmod
@@ -12,20 +14,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+
 #GLOBAL CONSTANTS
 #CONTROLLER_NUM = 0
 # GOAL_POSES = np.array([[1.,1.,pi/2.]])
 # N = len(GOAL_POSES) # number of robots
-N = 3
+N = 2
 BASE_NAME = "reference_"
-VELOCITY_TRANSMISSION_FREQ = 250 # Hz
-TRAJECTORY_FREQ = 250 # Hz
-# GOAL_POSES = np.array([[1.,0.,0.]])
+VELOCITY_TRANSMISSION_FREQ = 100 # Hz
+TRAJECTORY_SAMPLE_RATE = 0.05 # seconds
 
-# GOAL_POSES = np.zeros((N,3))
-# GOAL_POSES[:,-1] = pi/2.
-# GOAL_POSES[:,0:2] = np.random.uniform(-3,3,(N,2))
+MAXIMUM_LINEAR_VELOCITY = 10.
+MAXIMUM_ANGULAR_VELOCITY = 10.
 
+# normalizes angle to be between 0 and pi/2
+def normalize_angle_half_pi(theta):
+    """ normalizes angle to be 0 to pi/2 """
+    return fmod(fmod(float(theta), pi/2.0) + 2.0*pi, 2.0*pi)
 
 # normalizes angle to be 0 to 2*pi
 def normalize_angle_positive(theta):
@@ -43,6 +48,16 @@ def normalize_angle(theta):
 def shortest_angular_distance(theta1, theta2):
     return normalize_angle(float(theta2) - float(theta1))
 
+# returns distances between each robots, specifically an array of size N-1 x 1 for N robots
+def inter_bot_distance(bots_position):
+    x = bots_position[:,0]
+    y = bots_position[:,1]
+    inter_dists = []
+    for i in range(N-1):
+        a = np.array([x[i], y[i]])
+        b = np.array([x[i+1], y[i+1]])
+        inter_dists.append(np.linalg.norm((a-b),axis=0))
+    return np.array(inter_dists)
 
 #create class
 class DiffDriveVelocityController( object ):
@@ -54,10 +69,14 @@ class DiffDriveVelocityController( object ):
         self.phase_multiplier = 1.
         self.linear_velocity_multiplier = 1.
         self.angular_velocity_multiplier = 1.
-        self.bot_radius = 0.075
+        self.bot_radius = 0.02
         self.angularv_shift = 1
         self.freq = rospy.get_param("~freq", VELOCITY_TRANSMISSION_FREQ)
-        self.traj_freq = rospy.get_param("~traj_freq", TRAJECTORY_FREQ)
+        self.traj_sample = rospy.get_param("~traj_sample", TRAJECTORY_SAMPLE_RATE)
+        self.vmax = rospy.get_param("~vmax",MAXIMUM_LINEAR_VELOCITY)
+        self.wmax = rospy.get_param("~wmax",MAXIMUM_ANGULAR_VELOCITY)
+        self.marker_count = 0
+        self.marker_trajectory = Marker()
         # self.gamma = 0.001
         # self.b = 0.001
 
@@ -77,7 +96,12 @@ class DiffDriveVelocityController( object ):
         self.t0 = rospy.get_time()
         self.sub = rospy.Subscriber('pose_est', multi_poses, self.MultiPoses_callback)
         self.int_timer = rospy.Timer(rospy.Duration(1/float(self.freq)), self.pos_array_callback)
-        self.trajectory_timer = rospy.Timer(rospy.Duration(1/float(self.traj_freq)), self.trajectorygen_callback)
+
+        self.marker_pub = rospy.Publisher('/visualization_marker', Marker, queue_size=10)
+
+        self.frameBuffer = tf2_ros.Buffer()
+        self.frames_listener = tf2_ros.TransformListener(self.frameBuffer)
+        # self.trajectory_timer = rospy.Timer(rospy.Duration(1/float(self.traj_freq)), self.trajectorygen_callback)
         return
 
     def pos_array_callback(self, tdata):
@@ -90,8 +114,20 @@ class DiffDriveVelocityController( object ):
 
             # new control law with trajectory following -incorporating feedforward terms
 
-            # define required variables (current pose, desired pose, desired velocities)
+            # distances between every robot for future calculations related to automatic trajectory distributing\
 
+            total_bot_separation = sum(inter_bot_distance(self.bot_poses))
+
+            print "total_bot_separation =", total_bot_separation
+
+            if total_bot_separation < 0.32:
+                self.phase_multiplier = 1.1
+            else:
+                self.phase_multiplier = 1.0
+
+            # print "bot_inter_distances =", bot_inter_distances
+
+            # define required variables (current pose, desired pose, desired velocities)
             x = self.bot_poses[i,0]
             y = self.bot_poses[i,1]
             theta = self.bot_poses[i,2]
@@ -120,14 +156,35 @@ class DiffDriveVelocityController( object ):
 
             # collision detection scheme (rudimentary)
 
-            #test for constant circular trajectory- v and w are equal
-            vmax = 4.
-            wmax = 4.
+            # constrain forward/backward positive/negative linear and angular velocities to within the specified velocity limits
+            if v_control > self.vmax:
+                v_control = self.vmax
+            elif w_control > self.wmax:
+                w_control = self.wmax
+            elif v_control < -(self.vmax):
+                v_control = -(self.vmax)
+            elif w_control < -(self.wmax):
+                w_control = -(self.wmax)
 
-            # v_control = 0.75
-            # w_control = 0.75
+            # print "w_control for robot #", i, "=", w_control
 
-            pose_predict = np.array([x + vmax*(1/250),y + vmax*(1/250),theta + wmax*(1/250)])
+            # predict based on velocity*time what future robot pose is, see if there are other robots within its "safety" box
+
+            if normalize_angle_positive(theta) >= 0 and normalize_angle_positive(theta) < pi/2.:
+
+                pose_predict = np.array([x + (self.vmax*(1/float(self.freq)))*cos(theta), y + (self.vmax*(1/float(self.freq)))*sin(theta), theta + self.wmax*(1/float(self.freq))])
+
+            elif normalize_angle_positive(theta) >= pi/2. and normalize_angle_positive(theta) < pi:
+
+                pose_predict = np.array([x - (self.vmax*(1/float(self.freq)))*cos(theta), y + (self.vmax*(1/float(self.freq)))*sin(theta), theta + self.wmax*(1/float(self.freq))])
+
+            elif normalize_angle_positive(theta) >= pi and normalize_angle_positive(theta) < 3.*pi/2.:
+
+                pose_predict = np.array([x - (self.vmax*(1/float(self.freq)))*cos(theta), y - (self.vmax*(1/float(self.freq)))*sin(theta), theta + self.wmax*(1/float(self.freq))])
+
+            elif normalize_angle_positive(theta) >= 3.*pi/2. and normalize_angle_positive(theta) < 2.*pi:
+
+                pose_predict = np.array([x + (self.vmax*(1/float(self.freq)))*cos(theta), y + (self.vmax*(1/float(self.freq)))*sin(theta), theta + self.wmax*(1/float(self.freq))])
 
             # define "neighborhood" of current robot
             current_x_max = pose_predict[0] + self.bot_radius
@@ -136,38 +193,78 @@ class DiffDriveVelocityController( object ):
             current_y_min = pose_predict[1] - self.bot_radius
 
             if any(x >= current_x_min and x <= current_x_max  for x in otherbots[:,0]) and any(y >= current_y_min and y <= current_y_max for y in otherbots[:,1]):
-                self.angular_velocity_multiplier = 2.
+                self.angular_velocity_multiplier = 1.1
                 self.linear_velocity_multiplier = 0.1
-                # self.phase_multiplier = 10.
-                self.orient_offset = -pi/3.
-                self.angularv_shift = -1
+
             else:
                 self.angular_velocity_multiplier = 1.
                 self.linear_velocity_multiplier = 1.
-                # self.phase_multiplier = 1.
-                self.orient_offset = 0.
-                self.angularv_shift = 1
 
             v_control = self.linear_velocity_multiplier*v_control
+            w_control = self.angular_velocity_multiplier*w_control
 
-            w_control = self.angular_velocity_multiplier*(w_control)
+            # automatic trajectory distributing for "bunching" situation
 
-            print "v_control = ", v_control
-            print "w_control = ", w_control
+            # check for velocity decrease at points where dy/dt and dx/dt w.r.t. fixed frame are small enough by set criteria
+            # if v_d < 0.1:
+            #     self.phase_multiplier = 1.5
+
+            # if fixed distance between each robot is broken, adjust phase multiplier to preserve notion of constant distance between robot
+
+
+            # print "v_d =", v_d
+            print "phase_multiplier =", self.phase_multiplier
 
             self.multi_vels.twists.append(Twist(Vector3(v_control,0.,0.), Vector3(0.,0.,w_control)))
 
-            # send transforms for reference:
+            # send transforms for reference, set Marker visualization:
+
             q = tf.transformations.quaternion_from_euler(theta_d, 0, 0, 'szyx')
             pos = (x_d, y_d, 0)
             frame = BASE_NAME + str(i)
+            ref_frame = BASE_NAME + str(0)
             self.br.sendTransform(pos, q, rospy.Time.now(), frame, "odom")
 
+            try:
+                t = self.frameBuffer.lookup_transform("odom", ref_frame, rospy.Time(0))
+
+            except(tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+
+                continue
+
+            self.marker_count += 1
+
+            self.marker_trajectory.id = self.marker_count
+            self.marker_trajectory.header.frame_id = "odom"
+            self.marker_trajectory.header.stamp = rospy.Time.now()
+            self.marker_trajectory.action = 0
+
+            self.marker_trajectory.pose.position.x = t.transform.translation.x
+            self.marker_trajectory.pose.position.y = t.transform.translation.y
+            self.marker_trajectory.pose.position.z = t.transform.translation.z
+
+            # print marker_trajectory.pose.orientation.x
+
+            self.marker_trajectory.type = 2 #Sphere
+            self.marker_trajectory.color.r = 0.0
+            self.marker_trajectory.color.g = 1.0
+            self.marker_trajectory.color.b = 0.0
+            self.marker_trajectory.color.a = 0.5
+            self.marker_trajectory.scale.x = 0.05
+            self.marker_trajectory.scale.y = 0.05
+            self.marker_trajectory.scale.z = 0.05
+
+            self.marker_trajectory.lifetime = rospy.Duration(2.5)
+
+            self.marker_pub.publish(self.marker_trajectory)
 
         self.pub.publish(self.multi_vels)
         return
 
     def trajectorygen_callback(self):
+
+        # temporary solution- set rospy.sleep for duration set by trajectory sampling rate so trajectory isn't sampled as often- TODO: change this functionality to rospy Timer()
+        rospy.sleep(TRAJECTORY_SAMPLE_RATE)
 
         traj = np.zeros((N,3))
         v_traj = np.zeros(N)
@@ -178,26 +275,73 @@ class DiffDriveVelocityController( object ):
         for i in range(N):
 
             #pseudo leader-follower conditions
-            phase_var = -0.6*(self.phase_multiplier)*i
+            phase_var = -0.06*(self.phase_multiplier)*i
             # phase_var = 0
             # vel_adjust = i/1.1
 
             # set radii of each robot's circular trajectory- hardcoded for now
-            A = 1.
+            # A = 1.
 
-            # t = 0.1*t
-            x_t = A*cos(t+phase_var)
-            y_t = A*sin(t+phase_var)
+            # # t = 0.1*t
+            # x_t = A*cos(t+phase_var)
+            # y_t = A*2.5*sin(t+phase_var)
 
-            dx_dt = -A*sin(t+phase_var)
-            dy_dt = A*cos(t+phase_var)
+            # dx_dt = -A*sin(t+phase_var)
+            # dy_dt = 2.5*A*cos(t+phase_var)
 
-            d2x_dt2 = -A*cos(t+phase_var)
-            d2y_dt2 = -A*sin(t+phase_var)
+            # d2x_dt2 = -A*cos(t+phase_var)
+            # d2y_dt2 = -2.5*A*sin(t+phase_var)
+
+            # superellipse reference trajectory
+            A = 2.5
+            B = 1.5
+            r = 1.0
+
+            # t = normalize_angle_half_pi(t)
+            x_t = A*(cos(t+phase_var))**(2./r)
+            y_t = B*(sin(t+phase_var))**(2./r)
+
+            # adjustments for angular velocity errors:
+            sgnx = sgny = 1
+            theta_adjust = 0
+
+            # traveling full reference trajectory for r <1:
+            if r < 1:
+                if normalize_angle_positive(t) >= pi/2. and normalize_angle_positive(t) <= (pi):
+                    x_t = -x_t
+                    sgnx = -1
+                if normalize_angle_positive(t) >= pi and normalize_angle_positive(t) <= (3.*pi/2.):
+                    x_t = -x_t
+                    y_t = -y_t
+                    theta_adjust = pi
+                if normalize_angle_positive(t) >= (3.*pi/2.) and normalize_angle_positive(t) <= (2*pi):
+                    y_t = -y_t
+                    sgny = -1
+
+            # traveling full reference trajectory for r <1:
+            if r == 1.0:
+                if normalize_angle_positive(t) >= pi/2. and normalize_angle_positive(t) <= (pi):
+                    x_t = -x_t
+                    sgnx = -1
+                if normalize_angle_positive(t) >= pi and normalize_angle_positive(t) <= (3.*pi/2.):
+                    x_t = -x_t
+                    y_t = -y_t
+                    theta_adjust = pi
+                if normalize_angle_positive(t) >= (3.*pi/2.) and normalize_angle_positive(t) <= (2*pi):
+                    y_t = -y_t
+                    sgny = -1
+
+
+
+            dx_dt = A*(2./r)*cos(t+phase_var)**(2./r-1)*(-sin(t+phase_var))
+            dy_dt = B*(2./r)*sin(t+phase_var)**(2./r-1)*(cos(t+phase_var))
+
+            d2x_dt2 = (-2.*A*cos(t+phase_var)**(2./r))/r + (2.*A*(-1 + 2./r)*cos(t+phase_var)**(-2 + 2./r)*sin(t+phase_var)**2)/r
+            d2y_dt2 = (2.*B*(-1 + 2./r)*cos(t+phase_var)**2*sin(t+phase_var)**(-2 + 2./r))/r - (2.* B*sin(t+phase_var)**(2./r))/r
 
             vel_d = sqrt(dx_dt**2 + dy_dt**2)
 
-            theta_t = atan2(dy_dt,dx_dt)
+            theta_t = atan2(sgny*dy_dt,sgnx*dx_dt) + theta_adjust
 
             dtheta_dt = self.angularv_shift*((d2y_dt2*dx_dt)-(d2x_dt2*dy_dt))/(vel_d)**2
 
