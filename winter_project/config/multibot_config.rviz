@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /TF1
         - /TF1/Frames1
+        - /Marker1
       Splitter Ratio: 0.5
     Tree Height: 775
   - Class: rviz/Selection
@@ -57,25 +58,17 @@ Visualization Manager:
         All Enabled: false
         odom:
           Value: true
+        reference_0:
+          Value: false
+        reference_1:
+          Value: false
+        reference_2:
+          Value: false
         robot_0:
           Value: true
         robot_1:
           Value: true
         robot_2:
-          Value: true
-        robot_3:
-          Value: true
-        robot_4:
-          Value: true
-        robot_5:
-          Value: true
-        robot_6:
-          Value: true
-        robot_7:
-          Value: true
-        robot_8:
-          Value: true
-        robot_9:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -84,27 +77,27 @@ Visualization Manager:
       Show Names: true
       Tree:
         odom:
+          reference_0:
+            {}
+          reference_1:
+            {}
+          reference_2:
+            {}
           robot_0:
             {}
           robot_1:
             {}
           robot_2:
             {}
-          robot_3:
-            {}
-          robot_4:
-            {}
-          robot_5:
-            {}
-          robot_6:
-            {}
-          robot_7:
-            {}
-          robot_8:
-            {}
-          robot_9:
-            {}
       Update Interval: 0
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: visualization_marker
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
@@ -130,22 +123,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.98826
+      Distance: 4.57634
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.282412
-        Y: -0.218949
-        Z: 0.325594
+        X: -0.0775293
+        Y: -0.286464
+        Z: 0.334816
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.5698
+      Pitch: 0.354797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.70857
+      Yaw: 3.93357
     Saved: ~
 Window Geometry:
   Displays:
