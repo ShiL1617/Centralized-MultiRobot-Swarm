@@ -1,18 +1,16 @@
 <launch>
   <arg name="vis" default="true" /> <!-- run rviz? -->
 
-  <!--
-  <param name="robot_description" command="cat $(find winter_project)/urdf/diffbot.urdf"/>
-  -->
+
 
   <arg name="rviz_config" default="$(find winter_project)/config/multibot_config.rviz"/>
 
   <!-- start robots -->
 
-  <node name="test_diff_drive_integrator" type="test_diff_integrator.py" pkg="winter_project"  output="screen">
+  <node name="diff_drive_integrator" type="trajectory_diffdrive_integrator.py" pkg="winter_project"  output="screen">
   </node>
 
-  <node pkg="winter_project" type="test_diff_controller.py" name="test_diff_drive_velocity_controller" output="screen">
+  <node pkg="winter_project" type="trajectory_diffdrive_controller.py" name="test_diff_drive_velocity_controller" output="screen">
   </node>
 
 <!--   <node pkg="winter_project" type="trajectory_generation.py" name="diff_drive_trajectory_generation" output="screen">
