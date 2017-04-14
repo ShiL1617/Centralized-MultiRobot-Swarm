@@ -1,0 +1,17 @@
+<launch>
+  <!-- ROBOT 1-->
+  <group ns="robot1">
+    <param name="tf_prefix" value="robot1" />
+    <include file="$(find winter_project)/launch/trajectoryfollowing.launch" >
+      <arg name="robot_name" value="robot1" />
+    </include>
+  </group>
+
+  <!-- ROBOT 2-->
+  <group ns="robot2">
+    <param name="tf_prefix" value="robot2" />
+    <include file="$(find winter_project)/launch/trajectoryfollowing.launch" >
+      <arg name="robot_name" value="robot2" />
+    </include>
+  </group>
+</launch>
