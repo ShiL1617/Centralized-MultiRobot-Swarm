@@ -1,6 +1,6 @@
-#WINTER 2017 PROJECT
+# WINTER 2017 PROJECT
 
-##MULTI-ROBOT FORMATION CONTROL
+## MULTI-ROBOT FORMATION CONTROL
 
 After building the package by going to the catkin_ws/ directory then running
 
