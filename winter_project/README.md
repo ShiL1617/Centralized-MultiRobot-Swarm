@@ -10,8 +10,8 @@ catkin_make
 ```
 please source the appropriate .sh files:
 
+
 ```
-$sh
 source /opt/ros/indigo/setup.bash
 source devel/setup.bash
 ```
@@ -20,13 +20,11 @@ Run the following two launch files to show demos of
 trajectory following:
 
 ```
-$sh
 roslaunch winter_project trajectoryfollowing_combo.launch 
 ```
 
 shape formation (RViz unfortunately crashes a good amount with this one...):
 
 ```
-$sh
 roslaunch winter_project shape_formation_square_spiral.launch 
 ```
