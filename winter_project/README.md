@@ -5,7 +5,6 @@
 After building the package by going to the catkin_ws/ directory then running
 
 ```
-$sh
 catkin_make
 ```
 please source the appropriate .sh files:
